@@ -4,6 +4,7 @@
 ```bash
 cd backend
 source ../benclass/bin/activate
+uvicorn api.main:app --reload
 ```
 
 add users (id, name, password, role, gender)
