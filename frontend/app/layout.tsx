@@ -5,6 +5,7 @@ import Menu from "./components/menu";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 // or `v1X-appRouter` if you are using Next.js v1X
 import { ThemeProvider } from "@mui/material/styles";
+import { AuthContextProvider } from "./account/AuthContext";
 import theme from "./theme";
 
 const geistSans = localFont({
@@ -33,8 +34,10 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
-            <Menu />
-            {children}
+            <AuthContextProvider>
+              <Menu />
+              {children}
+            </AuthContextProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

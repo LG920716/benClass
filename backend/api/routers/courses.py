@@ -1,29 +1,30 @@
-from api.database import fake_data
 from fastapi import APIRouter, HTTPException
+from api.services.courses import CourseService
+from api.schemas.courses import CourseCreateRequest, CourseUpdateRequest, CourseResponse
 
 router = APIRouter()
 
-# 新增課程
-def create_course(course):
-    fake_data["courses"].append(course.dict())
+course_service = CourseService()
 
-# 更新課程
-def update_course(id, course_update):
-    for course in fake_data["courses"]:
-        if course["id"] == id:
-            course.update(course_update.dict())
-            return True
-    return False
+@router.post("/courses", response_model=CourseResponse, tags=["course"])
+def create_course(course_request: CourseCreateRequest):
+    return course_service.create_course(course_request)
 
-# 刪除課程
-def delete_course(id):
-    global fake_data
-    new_courses = [course for course in fake_data["courses"] if course["id"] != id]
-    if len(new_courses) == len(fake_data["courses"]):
-        return False
-    fake_data["courses"] = new_courses
-    return True
+@router.patch("/courses/{course_id}", response_model=CourseResponse, tags=["course"])
+def update_course(course_id: str, course_update: CourseUpdateRequest):
+    try:
+        updated_course = course_service.update_course(course_id, course_update)
+        return updated_course
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-# 查詢課程
-def query_course_by_id(id):
-    return next((course for course in fake_data["courses"] if course["id"] == id), None)
+
+@router.delete("/courses/{course_id}", tags=["course"])
+def delete_course(course_id: str):
+    return course_service.delete_course(course_id)
+
+@router.get("/courses/{course_id}", response_model=CourseResponse, tags=["course"])
+def query_course_by_id(course_id: str):
+    return course_service.query_course_by_id(course_id)

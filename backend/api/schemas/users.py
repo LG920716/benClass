@@ -9,6 +9,15 @@ class User(BaseModel):
     classes_enrolled: list = []
     class_scores: dict = {}
     total_score: int = 0
+    
+class UserResponse(BaseModel):
+    id: str
+    name: str
+    role: str
+    gender: int
+    classes_enrolled: list = []
+    class_scores: dict = {}
+    total_score: int = 0
 
 class UserLoginRequest(BaseModel):
     id: str
@@ -25,7 +34,7 @@ class UserCreateRequest(BaseModel):
     name: str
     password: str
     role: str
-    gender: str
+    gender: int
 
 class UserUpdateRequest(BaseModel):
     id: str

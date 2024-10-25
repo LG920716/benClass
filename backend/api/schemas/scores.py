@@ -1,5 +1,14 @@
 from pydantic import BaseModel
+from typing import Dict
 
-class Score(BaseModel):
+class ScoreCreateRequest(BaseModel):
     class_id: str
-    group_scores: dict
+    group_scores: Dict[str, int]
+
+class ScoreUpdateRequest(BaseModel):
+    group: str
+    score: int
+
+class ScoreResponse(BaseModel):
+    class_id: str
+    group_scores: Dict[str, int]

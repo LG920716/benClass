@@ -1,21 +1,21 @@
 from fastapi import APIRouter, Body, HTTPException
 
-from api.schemas.users import User, UserCreateRequest, UserUpdateRequest, UserLoginRequest, UserLoginResponse
+from api.schemas.users import User, UserCreateRequest, UserUpdateRequest, UserLoginRequest, UserLoginResponse, UserResponse
 from api.services.users import UserService
 
 router = APIRouter()
 user_service = UserService()
 
 @router.post("/register", tags=["user"])
-def register(user_register: UserCreateRequest = Body(...)) -> User:
-    return user_service.user_service(user_register)
+def register(user_register: UserCreateRequest = Body(...)) -> UserResponse:
+    return user_service.register(user_register)
 
-@router.put("/update", tags=["user"])
+@router.patch("/update", tags=["user"])
 def update_user(user_update: UserUpdateRequest) -> User:
     return user_service.update_user(id, user_update)
 
 @router.delete("/delete/{id}", tags=["user"])
-def delete_user(id: str) -> User:
+def delete_user(id: str) -> str:
     return user_service.delete_user(id)
 
 @router.get("/query/{course_id}", tags=["user"])

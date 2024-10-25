@@ -1,12 +1,17 @@
+import bcrypt
 from api.database import fake_data
-from api.schemas.users import User, UserCreateRequest, UserUpdateRequest
+from api.database import db
+from api.schemas.users import User, UserCreateRequest, UserUpdateRequest, UserResponse
 
 class UserDao:
-    def register(self, user_register: UserCreateRequest) -> User:
+    collection_name = "users"
+
+    def register(self, user_register: UserCreateRequest) -> UserResponse:
+        hashed_password = bcrypt.hashpw(user_register.password.encode('utf-8'), bcrypt.gensalt())
         new_user = {
             "id": user_register.id,
             "name": user_register.name,
-            "password": user_register.password,
+            "password": hashed_password.decode('utf-8'),
             "role": user_register.role,
             "gender": user_register.gender,
             "classes_enrolled": [],
@@ -14,18 +19,29 @@ class UserDao:
             "total_score": 0
         }
 
-        fake_data["users"].append(new_user)
+        new_user["id"] = str(new_user["id"])
+        doc_ref = db.collection(self.collection_name).document(str(new_user["id"]))
+        doc_ref.set(new_user)
 
-        return User(
-            id=new_user["id"],
-            name=new_user["name"],
-            password=new_user["password"],
-            role=new_user["role"],
-            gender=new_user["gender"],
-            classes_enrolled=new_user["classes_enrolled"],
-            class_scores=new_user["class_scores"],
-            total_score=new_user["total_score"]
-        )
+        return self.get(new_user["id"])
+    
+    def get(self, user_id: str) -> UserResponse:
+        doc_ref = db.collection(self.collection_name).document(user_id)
+        doc = doc_ref.get()
+
+        if doc.exists:
+            user_data = doc.to_dict()
+            return UserResponse(
+                id=user_data["id"],
+                name=user_data["name"],
+                role=user_data["role"],
+                gender=user_data["gender"],
+                classes_enrolled=user_data.get("classes_enrolled", []),
+                class_scores=user_data.get("class_scores", {}),
+                total_score=user_data.get("total_score", 0)
+            )
+        else:
+            raise Exception(f"User with ID {user_id} not found")
 
     def update_user(self, id: str, user_update: UserUpdateRequest) -> bool:
         for user in fake_data["users"]:
@@ -39,12 +55,17 @@ class UserDao:
                 return True
         return False
 
-    def delete_user(self, id: str) -> bool:
-        for user in fake_data["users"]:
-            if user["id"] == id:
-                fake_data["users"].remove(user)
-                return True
-        return False
+    def delete_user(self, id: str) -> str:
+        doc_ref = db.collection(self.collection_name).document(str(id))
+        doc = doc_ref.get()
+
+        if doc.exists:
+            doc_ref.delete()
+            return f"User with ID {id} has been successfully deleted."
+        else:
+            return f"User with ID {id} not found."
+
+
 
     def query_users_by_course(self, course_id: str) -> list:
         course = next((course for course in fake_data["courses"] if course["id"] == course_id), None)
@@ -53,23 +74,8 @@ class UserDao:
             return enrolled_users
         return []
     
-    def get_user_by_id(self, id: str) -> User:
-        for user in fake_data["users"]:
-            if user["id"] == id:
-                return User(
-                    id=user["id"],
-                    name=user["name"],
-                    password=user["password"],
-                    role=user["role"],
-                    gender=user["gender"],
-                    classes_enrolled=user["classes_enrolled"],
-                    class_scores=user["class_scores"],
-                    total_score=user["total_score"]
-                )
-        return None
-    
     def find_user_by_id(self, user_id: str):
-        for user in fake_data["users"]:
-            if user["id"] == user_id:
-                return user
+        user_ref = db.collection(self.collection_name).document(user_id).get()
+        if user_ref.exists:
+            return user_ref.to_dict()
         return None

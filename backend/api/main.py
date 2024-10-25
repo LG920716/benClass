@@ -4,10 +4,15 @@ from api.routers import users, courses, classes, scores, health
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",  # 允許這個來源
+    # 你可以添加更多的來源
+]
+
 # CORS 設置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http'],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*']
