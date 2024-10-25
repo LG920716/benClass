@@ -6,11 +6,11 @@ router = APIRouter()
 
 course_service = CourseService()
 
-@router.post("/courses", response_model=CourseResponse, tags=["course"])
+@router.post("", response_model=CourseResponse, tags=["course"])
 def create_course(course_request: CourseCreateRequest):
     return course_service.create_course(course_request)
 
-@router.patch("/courses/{course_id}", response_model=CourseResponse, tags=["course"])
+@router.patch("/{course_id}", response_model=CourseResponse, tags=["course"])
 def update_course(course_id: str, course_update: CourseUpdateRequest):
     try:
         updated_course = course_service.update_course(course_id, course_update)
@@ -21,10 +21,10 @@ def update_course(course_id: str, course_update: CourseUpdateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/courses/{course_id}", tags=["course"])
+@router.delete("/{course_id}", tags=["course"])
 def delete_course(course_id: str):
     return course_service.delete_course(course_id)
 
-@router.get("/courses/{course_id}", response_model=CourseResponse, tags=["course"])
+@router.get("/{course_id}", response_model=CourseResponse, tags=["course"])
 def query_course_by_id(course_id: str):
     return course_service.query_course_by_id(course_id)
