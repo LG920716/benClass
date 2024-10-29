@@ -1,28 +1,28 @@
 from fastapi import APIRouter, HTTPException
+from api.services.classes import ClassService
+from api.schemas.classes import Class
 
 router = APIRouter()
+class_service = ClassService()
 
-# 新增課程班次
-def create_class(class_data):
-    fake_data["classes"].append(class_data.dict())
+@router.post("", response_model=Class, tags=["classes"])
+def create_class(class_data: Class):
+    return class_service.create_class(class_data)
 
-# 更新課程班次
-def update_class(id, class_update):
-    for class_ in fake_data["classes"]:
-        if class_["id"] == id:
-            class_.update(class_update.dict())
-            return True
-    return False
+@router.patch("/{id}", response_model=Class, tags=["classes"])
+def update_class(id: str, class_update: Class):
+    try:
+        updated_class = class_service.update_class(id, class_update)
+        return updated_class
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-# 刪除課程班次
-def delete_class(id):
-    global fake_data
-    new_classes = [class_ for class_ in fake_data["classes"] if class_["id"] != id]
-    if len(new_classes) == len(fake_data["classes"]):
-        return False
-    fake_data["classes"] = new_classes
-    return True
+@router.delete("/{id}", tags=["classes"])
+def delete_class(id: str):
+    return class_service.delete_class(id)
 
-# 查詢課程班次
-def query_class_by_id(id):
-    return next((class_ for class_ in fake_data["classes"] if class_["id"] == id), None)
+@router.get("/{id}", response_model=Class, tags=["classes"])
+def query_class_by_id(id: str):
+    return class_service.query_class_by_id(id)

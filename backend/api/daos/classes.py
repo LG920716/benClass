@@ -5,9 +5,8 @@ class ClassDao:
     collection_name = "classes"
 
     def create_class(self, class_data: Class) -> Class:
-        doc_ref = db.collection(self.collection_name).document(class_data.id)
-        doc_ref.set(class_data.model_dump())
-        return class_data
+        doc_ref = db.collection(self.collection_name).document(class_data["id"]).set(class_data)
+        return Class(**doc_ref)
 
     def get_class_by_id(self, id: str) -> Class:
         doc_ref = db.collection(self.collection_name).document(id)

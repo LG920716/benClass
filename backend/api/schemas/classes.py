@@ -5,4 +5,4 @@ class Class(BaseModel):
     course_id: str
     date: str
     enrolled_students: list = []
-    groups: list = []
+    groups: list[dict[str, list[str]]] = []

@@ -5,14 +5,13 @@ class ScoreDao:
     collection_name = "scores"
 
     def create_score(self, score_data: dict) -> ScoreResponse:
-        doc_ref = db.collection(self.collection_name).document(score_data["class_id"])
+        doc_ref = db.collection(self.collection_name).document()
         doc_ref.set(score_data)
         return ScoreResponse(**score_data)
 
     def get_score_by_class_id(self, class_id: str) -> dict:
-        doc_ref = db.collection(self.collection_name).document(class_id)
-        doc = doc_ref.get()
-        if doc.exists:
+        docs = db.collection(self.collection_name).where("class_id", "==", class_id).stream()
+        for doc in docs:
             return doc.to_dict()
         return None
 

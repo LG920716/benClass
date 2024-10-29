@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List, Dict
 
 class User(BaseModel):
     id: str
@@ -6,17 +7,19 @@ class User(BaseModel):
     password: str
     role: str
     gender: int
-    classes_enrolled: list = []
-    class_scores: dict = {}
+    courses_enrolled: List[str] = []
+    classes_enrolled: List[str] = []
+    class_scores: Dict[str, int] = {}
     total_score: int = 0
-    
+
 class UserResponse(BaseModel):
     id: str
     name: str
     role: str
     gender: int
-    classes_enrolled: list = []
-    class_scores: dict = {}
+    courses_enrolled: List[str] = []
+    classes_enrolled: List[str] = []
+    class_scores: Dict[str, int] = {}
     total_score: int = 0
 
 class UserLoginRequest(BaseModel):
@@ -37,11 +40,13 @@ class UserCreateRequest(BaseModel):
     gender: int
 
 class UserUpdateRequest(BaseModel):
-    id: str
-    name: str
-    password: str
-    gender: str
-    classes_enrolled: list
-    class_scores: dict
-    total_score: int
-    action: str # UPDATE, ENROLL_COURSE, ENROLL_CLASS, UPDATE_SCORE, SCORES_SUM
+    name: str = None
+    password: str = None
+    gender: int = None
+    class_scores: Dict[str, int] = {}
+    total_score: int = 0
+    action: str = None  # UPDATE, UPDATE_SCORE, SCORES_SUM
+
+class UserEnrollRequest(BaseModel):
+    enroll_type:str # COURSE, CLASS
+    enroll_id: str

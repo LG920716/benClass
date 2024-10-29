@@ -1,11 +1,15 @@
 from fastapi import HTTPException
 from api.daos.courses import CourseDao
+from api.services.classes import ClassService
+from api.services.users import UserService
 from api.schemas.courses import CourseCreateRequest, CourseUpdateRequest, CourseResponse
 from api.utils import generate_random_code
 
 class CourseService:
     def __init__(self):
         self.course_dao = CourseDao()
+        self.class_service = ClassService()
+        self.user_service = UserService()
 
     def create_course(self, course_request: CourseCreateRequest) -> CourseResponse:
         course_id = generate_random_code()
@@ -27,7 +31,6 @@ class CourseService:
         if not course_data:
             raise HTTPException(status_code=404, detail=f"Course with ID {course_id} not found")
 
-        # 進行動作處理
         if course_update.action == "ADD":
             if course_update.student and course_update.student not in course_data.students:
                 course_data.students.append(course_update.student)
@@ -46,9 +49,9 @@ class CourseService:
             if course_update.teacher_name:
                 course_data.teacher_name = course_update.teacher_name
 
-        self.course_dao.update_course(course_id, course_data.dict())  # 將 course_data 轉換為字典傳遞
+        self.course_dao.update_course(course_id, course_data.model_dump())
 
-        return CourseResponse(**course_data.dict())  # 返回 CourseResponse 實例
+        return CourseResponse(**course_data.model_dump())
 
 
     def delete_course(self, course_id: str) -> str:
