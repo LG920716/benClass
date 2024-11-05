@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Menu from "./components/menu";
+import Menu from "../components/menu";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 // or `v1X-appRouter` if you are using Next.js v1X
 import { ThemeProvider } from "@mui/material/styles";
-import { AuthContextProvider } from "./account/AuthContext";
+import { AuthContextProvider } from "../context/AuthContext";
 import theme from "./theme";
 
 const geistSans = localFont({

@@ -2,14 +2,12 @@ from random import shuffle
 from fastapi import HTTPException
 from api.daos.classes import ClassDao
 from api.daos.scores import ScoreDao
-from api.services.users import UserService
-from api.schemas.classes import Class, ClassUpdateRequest, ClassGroupingRequest
+from api.schemas.classes import Class, ClassUpdateRequest
 
 class ClassService:
     def __init__(self):
         self.class_dao = ClassDao()
         self.score_dao = ScoreDao() 
-        self.user_service = UserService()
 
     def create_class(self, class_data: Class) -> Class:
         created_class = self.class_dao.create_class(class_data)
@@ -52,11 +50,13 @@ class ClassService:
         return Class(**class_)
     
     def grouping(self, id: str):
+        from api.services.users import UserService
+        user_service = UserService()
         class_data = self.class_dao.get_class_by_id(id)
         enrolled_students = class_data["enrolled_students"]
         
         team_count = max(1, len(enrolled_students) // 6)
-        students = [self.user_service.find_user_by_id(student_id) for student_id in enrolled_students]
+        students = [user_service.find_user_by_id(student_id) for student_id in enrolled_students]
         
         boys = [s for s in students if s['gender'] == 1]
         girls = [s for s in students if s['gender'] == 2]
