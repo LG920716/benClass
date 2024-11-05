@@ -42,6 +42,13 @@ export interface UserCreateRequest {
   gender: number;
 }
 
+export interface UserUpdateRequest{
+    name?: string;
+    password?: string;
+    gender?: number;
+    role?: string;
+}
+
 export interface UserEnrollRequest {
   enroll_type: "COURSE" | "CLASS";
   enroll_id: string;
@@ -79,9 +86,14 @@ export interface Class {
   groups: Record<string, string[]>[];
 }
 
+export interface ClassCreateRequest {
+  date: string;
+  course_id: string;
+}
+
 export interface ClassUpdateRequest {
   action: "ADD" | "DELETE" | "UPDATE";
-  date: string;
+  date?: string;
   student?: string;
   students?: string[];
 }
@@ -95,11 +107,6 @@ export interface RoundUpdate {
 export interface MatchUpdate {
   match_number: number;
   rounds: RoundUpdate[];
-}
-
-export interface ScoreCreateRequest {
-  class_id: string;
-  matches: MatchUpdate[];
 }
 
 export interface ScoreUpdateRequest {

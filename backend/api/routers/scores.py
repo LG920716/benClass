@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from api.services.scores import ScoreService
-from api.schemas.scores import ScoreCreateRequest, ScoreUpdateRequest, ScoreResponse
+from api.schemas.scores import ScoreUpdateRequest, ScoreResponse
 
 router = APIRouter()
 score_service = ScoreService()

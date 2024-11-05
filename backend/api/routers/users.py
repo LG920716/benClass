@@ -28,11 +28,11 @@ def login(user_login: UserLoginRequest = Body(...)):
         return user
     raise HTTPException(status_code=400, detail="Invalid credentials")
 
-@router.patch("/{id}/enroll", tags=["user"])
+@router.patch("/{id}/enroll", response_model=UserResponse, tags=["user"])
 def user_enroll(id: str, data: UserEnrollRequest):
     return user_service.user_enroll(id, data)
 
 # when class finish, score computation
-@router.patch("/{id}/score_update/{class_id}", tags=["user"])
-def score_update(id: str, class_id: str):
-    return user_service.score_update(id, class_id)
+@router.patch("/score_update/{class_id}", tags=["user"])
+def score_update(class_id: str) -> str:
+    return user_service.score_update(class_id)

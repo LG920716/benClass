@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from api.daos.classes import ClassDao
 from api.daos.scores import ScoreDao
 from api.schemas.classes import Class, ClassUpdateRequest
+from api.utils import generate_random_code
 
 class ClassService:
     def __init__(self):
@@ -10,7 +11,14 @@ class ClassService:
         self.score_dao = ScoreDao() 
 
     def create_class(self, class_data: Class) -> Class:
-        created_class = self.class_dao.create_class(class_data)
+        new_class = {
+            "id": generate_random_code(),
+            "course_id": class_data.course_id,
+            "date": class_data.date,
+            "enrolled_students": [],
+            "groups": []
+        }
+        created_class = self.class_dao.create_class(new_class)
         score_data = {
             "class_id": created_class.id,
             "matches": []

@@ -54,28 +54,32 @@ class UserService:
                     "student": id,
                     "action": "ADD"
                 }
-# 要修改            
+                class_service.update_class(data.enroll_id, enroll_data)
             return self.user_dao.user_enroll(id, data)
         
-    def score_update(self, user_id: str, class_id: str):
+    def score_update(self, class_id: str):
         class_data = self.class_service.query_class_by_id(class_id)
         score_data = self.score_service.query_score_by_class_id(class_id)
 
-        user_group = None
-        for group, members in class_data["groups"].items():
-            if user_id in members:
-                user_group = group
-                break
+        student_ids = class_data["enrolled_students"]
         
-        if not user_group:
-            raise HTTPException(status_code=404, detail="User group not found in class data")
+        for user_id in student_ids:
+            user_group = None
+            for group, members in class_data["groups"].items():
+                if user_id in members:
+                    user_group = group
+                    break
 
-        total_score = sum(round["score"] for round in score_data["matches"]["rounds"] if round["group"] == user_group)
+            if not user_group:
+                raise HTTPException(status_code=404, detail=f"User {user_id} group not found in class data")
 
-        user = self.user_dao.find_user_by_id(user_id)
-        user["class_scores"][class_id] = total_score
-        user["total_score"] += total_score
-        self.user_dao.update_user(user_id, user)
+            total_score = sum(round["score"] for round in score_data["matches"]["rounds"] if round["group"] == user_group)
 
-        return {"message": f"User {user_id} in group {user_group} has a total score of {total_score} for class {class_id}"}
+            user = self.user_dao.find_user_by_id(user_id)
+            user["class_scores"][class_id] = total_score
+            user["total_score"] += total_score
+            self.user_dao.update_user(user_id, user)
+
+        return {"message": f"Scores updated for all students in class {class_id}"}
+
 

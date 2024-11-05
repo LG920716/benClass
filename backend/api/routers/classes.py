@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from api.services.classes import ClassService
-from api.schemas.classes import Class, ClassUpdateRequest
+from api.schemas.classes import Class, ClassCreateRequest, ClassUpdateRequest
 
 router = APIRouter()
 class_service = ClassService()
 
 @router.post("", response_model=Class, tags=["classes"])
-def create_class(class_data: Class):
+def create_class(class_data: ClassCreateRequest):
     return class_service.create_class(class_data)
 
 @router.patch("/{id}", response_model=Class, tags=["classes"])
