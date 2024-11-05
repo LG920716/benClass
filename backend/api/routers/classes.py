@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from api.services.classes import ClassService
-from api.schemas.classes import Class
+from api.schemas.classes import Class, ClassUpdateRequest
 
 router = APIRouter()
 class_service = ClassService()
@@ -10,7 +10,7 @@ def create_class(class_data: Class):
     return class_service.create_class(class_data)
 
 @router.patch("/{id}", response_model=Class, tags=["classes"])
-def update_class(id: str, class_update: Class):
+def update_class(id: str, class_update: ClassUpdateRequest):
     try:
         updated_class = class_service.update_class(id, class_update)
         return updated_class
@@ -26,3 +26,7 @@ def delete_class(id: str):
 @router.get("/{id}", response_model=Class, tags=["classes"])
 def query_class_by_id(id: str):
     return class_service.query_class_by_id(id)
+
+@router.patch("{id}/grouping", tags=["classes"])
+def grouping(id: str):
+    return class_service.grouping(id)

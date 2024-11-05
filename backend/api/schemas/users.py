@@ -43,9 +43,7 @@ class UserUpdateRequest(BaseModel):
     name: str = None
     password: str = None
     gender: int = None
-    class_scores: Dict[str, int] = {}
-    total_score: int = 0
-    action: str = None  # UPDATE, UPDATE_SCORE, SCORES_SUM
+    role: str = None
 
 class UserEnrollRequest(BaseModel):
     enroll_type:str # COURSE, CLASS

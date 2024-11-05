@@ -9,18 +9,26 @@ class ScoreDao:
         doc_ref.set(score_data)
         return ScoreResponse(**score_data)
 
-    def get_score_by_class_id(self, class_id: str) -> dict:
+    def get_score_by_class_id(self, class_id: str) -> ScoreResponse:
         docs = db.collection(self.collection_name).where("class_id", "==", class_id).stream()
+        scores = []
         for doc in docs:
-            return doc.to_dict()
+            scores.append(doc.to_dict())
+        if scores:
+            return ScoreResponse(**scores[0])
         return None
 
-    def get_scores_by_class(self, class_id: str) -> ScoreResponse:
-        return self.get_score_by_class_id(class_id)
-
     def update_scores(self, class_id: str, score_data: ScoreResponse):
-        doc_ref = db.collection(self.collection_name).document(class_id)
-        doc_ref.set(score_data.model_dump())
+        docs = db.collection(self.collection_name).where("class_id", "==", class_id).stream()
+        for doc in docs:
+            doc_ref = doc.reference
+            doc_ref.set(score_data.model_dump())
+            return 
+
+        raise Exception(f"Scores for class ID {class_id} not found")
 
     def delete_score(self, class_id: str):
-        db.collection(self.collection_name).document(class_id).delete()
+        docs = db.collection(self.collection_name).where("class_id", "==", class_id).stream()
+        for doc in docs:
+            doc.reference.delete()
+        return f"Scores for class ID {class_id} have been successfully deleted."  # 返回成功消息

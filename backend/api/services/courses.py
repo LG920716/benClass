@@ -1,16 +1,12 @@
 from fastapi import HTTPException
 from api.daos.courses import CourseDao
-from api.services.classes import ClassService
-from api.services.users import UserService
 from api.schemas.courses import CourseCreateRequest, CourseUpdateRequest, CourseResponse
 from api.utils import generate_random_code
 
 class CourseService:
     def __init__(self):
         self.course_dao = CourseDao()
-        self.class_service = ClassService()
-        self.user_service = UserService()
-
+        
     def create_course(self, course_request: CourseCreateRequest) -> CourseResponse:
         course_id = generate_random_code()
         while self.course_dao.get_course_by_id(course_id):

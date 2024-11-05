@@ -1,6 +1,5 @@
-const BASE_URL = "http://localhost:8000";  // 根據你的 FastAPI 伺服器設定
+const BASE_URL = "http://localhost:8000"; 
 
-// 註冊用戶 API
 export const registerUser = async (userData: {
   id: string;
   name: string;
@@ -23,7 +22,6 @@ export const registerUser = async (userData: {
   return response.json();
 };
 
-// 更新用戶資料 API
 export const updateUser = async (userData: {
   id: string;
   name: string;
@@ -49,7 +47,6 @@ export const updateUser = async (userData: {
   return response.json();
 };
 
-// 刪除用戶 API
 export const deleteUser = async (userId: string) => {
   const response = await fetch(`${BASE_URL}/users/delete/${userId}`, {
     method: "DELETE",
@@ -62,7 +59,6 @@ export const deleteUser = async (userId: string) => {
   return response.json();
 };
 
-// 查詢根據課程 ID 的用戶 API
 export const queryUsersByCourse = async (courseId: string) => {
   const response = await fetch(`${BASE_URL}/users/query/${courseId}`, {
     method: "GET",
@@ -75,7 +71,6 @@ export const queryUsersByCourse = async (courseId: string) => {
   return response.json();
 };
 
-// 登錄用戶 API
 export const loginUser = async (loginData: { id: string, password: string }) => {
   const response = await fetch(`${BASE_URL}/users/login`, {
     method: "POST",

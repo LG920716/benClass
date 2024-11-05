@@ -39,6 +39,22 @@ class UserService:
         
     def user_enroll(self, id: str, data: UserEnrollRequest) -> str:
         if validate_enrollment(data.enroll_type, data.enroll_id, id):
+            if data.enroll_type == "COURSE":
+                from api.services.courses import CourseService
+                course_service = CourseService()
+                enroll_data = {
+                    "student": id,
+                    "action": "ADD"
+                }
+                course_service.update_course(data.enroll_id, enroll_data)
+            elif data.enroll_type == "CLASS":
+                from api.services.classes import ClassService
+                class_service = ClassService()
+                enroll_data = {
+                    "student": id,
+                    "action": "ADD"
+                }
+# 要修改            
             return self.user_dao.user_enroll(id, data)
         
     def score_update(self, user_id: str, class_id: str):

@@ -14,7 +14,7 @@ class ScoreService:
         return self.score_dao.create_score(score_data)
 
     def update_score(self, class_id: str, score_update: ScoreUpdateRequest) -> ScoreResponse:
-        existing_scores = self.score_dao.get_scores_by_class(class_id)
+        existing_scores = self.score_dao.get_score_by_class_id(class_id)
 
         if not existing_scores:
             raise HTTPException(status_code=404, detail=f"Scores for class ID {class_id} not found")

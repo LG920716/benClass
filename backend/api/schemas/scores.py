@@ -3,7 +3,7 @@ from typing import List, Dict
 
 class RoundUpdate(BaseModel):
     round_number: int
-    scores: Dict[str, int]  # 例如 {"A": 20, "B": 15}
+    scores: Dict[str, int]
 
 class MatchUpdate(BaseModel):
     match_number: int
