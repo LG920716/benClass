@@ -16,7 +16,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { lightBlue } from "@mui/material/colors";
-import ProductAdd from "../../components/productAddDialog";
+import ProductAdd from "../../../components/productAddDialog";
 
 interface Product {
   desc: string;

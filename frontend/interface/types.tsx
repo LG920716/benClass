@@ -31,6 +31,7 @@ export interface UserLoginResponse {
   id: string;
   name: string;
   role: string;
+  gender: number;
   token?: string;
 }
 

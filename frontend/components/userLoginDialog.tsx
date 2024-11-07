@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Dialog, // 引入 Dialog
+  Dialog,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -18,7 +18,7 @@ interface LoginProps {
   handleClick: (e: React.ChangeEvent<HTMLInputElement>) => void;
   login: () => void;
   hide: () => void;
-  open: boolean; // 添加 open 屬性
+  open: boolean;
 }
 
 export default function UserLoginDialog({ credentials, handleClick, login, hide, open }: LoginProps) {

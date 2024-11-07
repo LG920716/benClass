@@ -67,7 +67,7 @@ export const createClass = async (data: ClassCreateRequest): Promise<Class> => {
 };
 
 export const updateClass = async (id: string, data: ClassUpdateRequest): Promise<Class> => {
-  const response = await axios.patch(`${BASE_URL}/classses/${id}`, data);
+  const response = await axios.patch(`${BASE_URL}/classes/${id}`, data);
   return response.data;
 };
 

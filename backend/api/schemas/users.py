@@ -30,6 +30,7 @@ class UserLoginResponse(BaseModel):
     id: str
     name: str
     role: str
+    gender: int
     token: str = None
 
 class UserCreateRequest(BaseModel):

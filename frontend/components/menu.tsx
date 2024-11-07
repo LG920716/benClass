@@ -1,12 +1,11 @@
-// /menu.tsx
-
 "use client";
-import { AppBar, Button, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Button, Stack, Toolbar, Typography } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "../account/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import UserLoginDialog from "./userLoginDialog";
 import { useState } from "react";
-import { loginUser } from "../api/apis";
+import { loginUser } from "../app/api/apis";
+import UserInfoCard from "./userInfoCard";
 
 export default function Menu() {
   const router = useRouter();
@@ -14,7 +13,8 @@ export default function Menu() {
   const auth = useAuth();
 
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
-  const [credentials, setCredentials] = useState({ id: "", password: "" });
+  const [credentials, setCredentials] = useState({ id: "", password: "", gender: 0 });
+  const [openUserInfo, setOpenUserInfo] = useState(false);
 
   const handleLoginDialogOpen = () => {
     setOpenLoginDialog(true);
@@ -22,7 +22,7 @@ export default function Menu() {
 
   const handleLoginDialogClose = () => {
     setOpenLoginDialog(false);
-    setCredentials((prev) => ({ id: "", password: "" }));
+    setCredentials((prev) => ({ id: "", password: "", gender: 0 }));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,8 +36,8 @@ export default function Menu() {
         id: credentials.id,
         password: credentials.password,
       });
-      const { id, role } = response; // 假設 response 包含 id 和 role
-      auth.login(id, role); // 更新 context
+      const { id, role, gender } = response;
+      auth.login(id, role, gender);
       handleLoginDialogClose();
     } catch (error) {
       console.error("登入失敗", error);
@@ -46,6 +46,11 @@ export default function Menu() {
 
   const handleLogout = () => {
     auth.logout();
+    setOpenUserInfo(false);
+  };
+
+  const handleAvatarClick = () => {
+    setOpenUserInfo(!openUserInfo);
   };
 
   return (
@@ -56,7 +61,7 @@ export default function Menu() {
           variant={pathname === "/" ? "outlined" : "text"}
           onClick={() => router.push("/")}
         >
-          主頁面
+          VolleyMate
         </Button>
         <Button
           color="inherit"
@@ -76,16 +81,22 @@ export default function Menu() {
         ) : null}
         {auth.account.id ? (
           <>
-            <Typography
-              variant="body1"
-              color="inherit"
-              style={{ marginLeft: "auto" }}
-            >
-              {auth.account.id}
-            </Typography>
-            <Button color="inherit" onClick={handleLogout}>
-              登出
-            </Button>
+            <Stack direction="row" spacing={2}>
+              <Avatar
+                alt="User Avatar"
+                src="../static/images/user.png"
+                onClick={handleAvatarClick}
+                sx={{ cursor: 'pointer' }}
+              />
+            </Stack>
+            {openUserInfo && (
+              <UserInfoCard
+                userId={auth.account.id}
+                role={auth.account.role}
+                gender={auth.account.gender}
+                onLogout={handleLogout}
+              />
+            )}
           </>
         ) : (
           <Button color="inherit" onClick={handleLoginDialogOpen}>
