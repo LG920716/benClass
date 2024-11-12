@@ -24,6 +24,11 @@ export const getUserByCourseId = async (course_id: string): Promise<UserResponse
   return response.data;
 };
 
+export const getUserById = async (id: string): Promise<UserResponse> => {
+  const response = await axios.get(`${BASE_URL}/users/${id}`);
+  return response.data;
+};
+
 export const loginUser = async (data: UserLoginRequest): Promise<UserLoginResponse> => {
   const response = await axios.post(`${BASE_URL}/users/login`, data);
   return response.data;
@@ -47,6 +52,11 @@ export const createCourse = async (data: CourseCreateRequest): Promise<Course> =
 
 export const updateCourse = async (course_id: string, data: CourseUpdateRequest): Promise<Course> => {
   const response = await axios.patch(`${BASE_URL}/courses/${course_id}`, data);
+  return response.data;
+};
+
+export const getCourseByTeacher = async (teacher_name: string): Promise<Course[]> => {
+  const response = await axios.get(`${BASE_URL}/courses/by-teacher/${teacher_name}`);
   return response.data;
 };
 

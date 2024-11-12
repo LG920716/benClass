@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Menu from "../components/menu";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
-// or `v1X-appRouter` if you are using Next.js v1X
 import { ThemeProvider } from "@mui/material/styles";
 import { AuthContextProvider } from "../context/AuthContext";
 import theme from "./theme";
@@ -31,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable}`} style={{backgroundColor: "#f7f9fb"}}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <AuthContextProvider>

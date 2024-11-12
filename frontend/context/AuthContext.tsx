@@ -5,9 +5,10 @@ type authContextType = {
   account: {
     id: string;
     role: string;
+    name: string;
     gender: number;
   };
-  login: (id: string, role: string, gender: number) => void;
+  login: (id: string, role: string, name: string, gender: number) => void;
   logout: () => void;
 };
 
@@ -15,9 +16,10 @@ const authContextDefaultValues: authContextType = {
   account: {
     id: "",
     role: "",
+    name: "",
     gender: 0,
   },
-  login: (id: string, role: string, gender: number) => {},
+  login: (id: string, role: string, name: string, gender: number) => {},
   logout: () => {},
 };
 
@@ -32,14 +34,14 @@ export const AuthContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [account, setAccount] = useState({ id: "", role: "", gender: 0 });
+  const [account, setAccount] = useState({ id: "", role: "", name: "", gender: 0 });
 
-  const login = (id: string, role: string, gender: number) => {
-    setAccount({ id, role, gender });
+  const login = (id: string, role: string, name: string, gender: number) => {
+    setAccount({ id, role, name, gender });
   };
 
   const logout = () => {
-    setAccount({ id: "", role: "", gender: 0 });
+    setAccount({ id: "", role: "", name: "", gender: 0 });
   };
 
   const value = {

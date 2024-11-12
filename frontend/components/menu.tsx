@@ -1,11 +1,21 @@
 "use client";
-import { AppBar, Avatar, Button, Stack, Toolbar, Typography } from "@mui/material";
+import {
+  AppBar,
+  Avatar,
+  Button,
+  Stack,
+  Toolbar,
+  Box,
+  Popover,
+} from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import UserLoginDialog from "./userLoginDialog";
 import { useState } from "react";
-import { loginUser } from "../app/api/apis";
-import UserInfoCard from "./userInfoCard";
+import { loginUser, registerUser } from "../app/api/apis";
+import UserLoginDialog from "../components/userLoginDialog";
+import UserRegisterDialog from "../components/userRegisterDialog";
+import UserInfoCard from "../components/userInfoCard";
+import Logo from "./logo";
 
 export default function Menu() {
   const router = useRouter();
@@ -13,21 +23,39 @@ export default function Menu() {
   const auth = useAuth();
 
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
-  const [credentials, setCredentials] = useState({ id: "", password: "", gender: 0 });
-  const [openUserInfo, setOpenUserInfo] = useState(false);
+  const [openRegisterDialog, setOpenRegisterDialog] = useState(false);
+  const [credentials, setCredentials] = useState({
+    id: "",
+    password: "",
+  });
+  const [registerInfo, setRegisterInfo] = useState({
+    id: "",
+    name: "",
+    password: "",
+    role: "student",
+    gender: 0,
+  });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const handleLoginDialogOpen = () => {
-    setOpenLoginDialog(true);
-  };
+  const handleLoginDialogOpen = () => setOpenLoginDialog(true);
+  const handleRegisterDialogOpen = () => setOpenRegisterDialog(true);
 
-  const handleLoginDialogClose = () => {
+  const handleDialogClose = () => {
     setOpenLoginDialog(false);
-    setCredentials((prev) => ({ id: "", password: "", gender: 0 }));
+    setOpenRegisterDialog(false);
+    setCredentials({ id: "", password: "" });
+    setRegisterInfo({ id: "", name: "", password: "", role: "student", gender: 0 });
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+  ) => {
     const { name, value } = e.target;
-    setCredentials((prev) => ({ ...prev, [name]: value }));
+    if (openLoginDialog) {
+      setCredentials((prev) => ({ ...prev, [name as string]: value }));
+    } else if (openRegisterDialog) {
+      setRegisterInfo((prev) => ({ ...prev, [name as string]: value }));
+    }
   };
 
   const handleLogin = async () => {
@@ -36,49 +64,53 @@ export default function Menu() {
         id: credentials.id,
         password: credentials.password,
       });
-      const { id, role, gender } = response;
-      auth.login(id, role, gender);
-      handleLoginDialogClose();
+      const { id, role, name, gender } = response;
+      auth.login(id, role, name, gender);
+
+      if (response.role === 'teacher') {
+        router.push('/courses');
+      }
+
+      handleDialogClose();
     } catch (error) {
       console.error("登入失敗", error);
     }
   };
 
+  const handleRegister = async () => {
+    try {
+      const response = await registerUser(registerInfo);
+      const { id, role, name, gender } = response;
+      auth.login(id, role, name, gender); // 自動登入
+      handleDialogClose();
+    } catch (error) {
+      console.error("註冊失敗", error);
+    }
+  };
+
   const handleLogout = () => {
     auth.logout();
-    setOpenUserInfo(false);
+    setAnchorEl(null);
   };
 
-  const handleAvatarClick = () => {
-    setOpenUserInfo(!openUserInfo);
+  const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
   };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "user-popover" : undefined;
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{height: "4rem"}}>
       <Toolbar>
-        <Button
-          color="inherit"
-          variant={pathname === "/" ? "outlined" : "text"}
-          onClick={() => router.push("/")}
-        >
-          VolleyMate
-        </Button>
-        <Button
-          color="inherit"
-          variant={pathname === "/product" ? "outlined" : "text"}
-          onClick={() => router.push("/product")}
-        >
-          產品管理
-        </Button>
-        {auth.account.role === "teacher" ? (
-          <Button
-            color="inherit"
-            variant={pathname === "/product" ? "outlined" : "text"}
-            onClick={() => router.push("/product")}
-          >
-            權限管理
-          </Button>
-        ) : null}
+        <Logo/>
+
+        <Box sx={{ flexGrow: 1 }} />
+
         {auth.account.id ? (
           <>
             <Stack direction="row" spacing={2}>
@@ -86,30 +118,56 @@ export default function Menu() {
                 alt="User Avatar"
                 src="../static/images/user.png"
                 onClick={handleAvatarClick}
-                sx={{ cursor: 'pointer' }}
+                sx={{ cursor: "pointer" }}
               />
             </Stack>
-            {openUserInfo && (
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handlePopoverClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+            >
               <UserInfoCard
                 userId={auth.account.id}
                 role={auth.account.role}
                 gender={auth.account.gender}
                 onLogout={handleLogout}
               />
-            )}
+            </Popover>
           </>
         ) : (
-          <Button color="inherit" onClick={handleLoginDialogOpen}>
-            登入
-          </Button>
+          <>
+            <Button color="inherit" onClick={handleRegisterDialogOpen}>
+              註冊
+            </Button>
+            <Button color="inherit" onClick={handleLoginDialogOpen}>
+              登入
+            </Button>
+          </>
         )}
       </Toolbar>
+
       <UserLoginDialog
         credentials={credentials}
         handleClick={handleInputChange}
         login={handleLogin}
-        hide={handleLoginDialogClose}
+        hide={handleDialogClose}
         open={openLoginDialog}
+      />
+      <UserRegisterDialog
+        userInfo={registerInfo}
+        handleChange={handleInputChange}
+        register={handleRegister}
+        closeDialog={handleDialogClose}
+        open={openRegisterDialog}
       />
     </AppBar>
   );

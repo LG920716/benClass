@@ -48,6 +48,25 @@ class CourseService:
         self.course_dao.update_course(course_id, course_data.model_dump())
 
         return CourseResponse(**course_data.model_dump())
+    
+    def get_courses_by_teacher(self, teacher_name: str) -> list[CourseResponse]:
+        course_data = self.course_dao.get_courses_by_teacher(teacher_name)
+        
+        if not course_data:
+            return []
+
+        courses = [
+            CourseResponse(
+                id=course["id"],
+                course_name=course.get("course_name"),
+                teacher_name=course.get("teacher_name"),
+                students=course.get("students", []),
+                classes=course.get("classes", [])
+            )
+            for course in course_data
+        ]
+        
+        return courses
 
 
     def delete_course(self, course_id: str) -> str:
