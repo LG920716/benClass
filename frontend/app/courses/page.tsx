@@ -1,70 +1,131 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from "@/context/AuthContext";
-import Box, { BoxProps } from '@mui/material/Box';
-import { getCourseByTeacher } from '../api/apis';
+import Box from '@mui/material/Box';
+import { Button } from '@mui/material';
+import CourseCreateDialog from '@/components/courseCreateDialog';
+import CourseItem from '@/components/courseItem';
+import { Course, CourseCreateRequest } from '@/interface/types';
+import { getCourseByTeacher, createCourse, deleteCourse, updateCourse } from '../api/apis';
+import axios from 'axios';
+import CourseEditDialog from '@/components/courseUpdateDialog';
 
-function Item(props: BoxProps) {
-  const { sx, ...other } = props;
-  return (
-    <Box
-      sx={[
-        (theme) => ({
-          bgcolor: '#fff',
-          color: 'grey.800',
-          border: '1px solid',
-          borderColor: 'grey.300',
-          p: 1,
-          borderRadius: 2,
-          fontSize: '0.875rem',
-          fontWeight: '700',
-          ...theme.applyStyles('dark', {
-            bgcolor: '#101010',
-            color: 'grey.300',
-            borderColor: 'grey.800',
-          }),
-        }),
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-      {...other}
-    />
-  );
-}
-
-export default function Gap() {
+export default function Courses() {
   const auth = useAuth();
-  const [courses, setCourses] = useState<any[]>([]); // 存儲課程列表
+  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false); // State for editing course
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null); // Selected course for editing
 
-  useEffect(() => {
+  // Fetch courses using useCallback to avoid unnecessary re-creations
+  const fetchCourses = useCallback(async () => {
     if (auth.account?.id) {
-      const fetchCourses = async () => {
-        try {
-          setLoading(true);
-          const response = await getCourseByTeacher(auth.account.name);
-          setCourses(response);  // 假設 API 返回的是課程列表
-        } catch (err) {
-          setError("無法獲取課程資料");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchCourses();
+      try {
+        setLoading(true);
+        const response = await getCourseByTeacher(auth.account.name);
+        setCourses(response);
+      } catch (err) {
+        setError("無法獲取課程資料");
+      } finally {
+        setLoading(false);
+      }
     }
   }, [auth.account?.id]);
 
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  const showDialog = () => setOpenDialog(true);
+  const hideDialog = () => setOpenDialog(false);
+
+  const handleCreateCourse = async (courseName: string) => {
+    const courseCreateData: CourseCreateRequest = {
+      course_name: courseName,
+      teacher_name: auth.account.name,
+    };
+
+    try {
+      await createCourse(courseCreateData);
+      fetchCourses();
+    } catch (error) {
+      setError("創建課程失敗");
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    try {
+      await deleteCourse(courseId);
+      fetchCourses();
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        setError(`刪除失敗: ${error.response.data.message || '未知錯誤'}`);
+      } else {
+        setError('刪除失敗，請稍後再試');
+      }
+    }
+  };
+
+  const handleEditCourse = (course: Course) => {
+    setSelectedCourse(course);
+    setOpenEditDialog(true);
+  };
+
+  const handleUpdateCourse = async (newCourseName: string) => {
+    if (!selectedCourse) return;
+
+    const updateData = {
+      action: "UPDATE" as "UPDATE",
+      course_name: newCourseName,
+    };
+
+    try {
+      await updateCourse(selectedCourse.id, updateData);
+      setOpenEditDialog(false);
+      fetchCourses();
+    } catch (error) {
+      setError("更新課程名稱失敗");
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', padding: '1rem' }}>
+      {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
+
+      <Box sx={{ mb: 2 }}>
+        <Button variant="outlined" color="secondary" onClick={showDialog}>
+          創建課程
+        </Button>
+      </Box>
+
       <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: 'repeat(2, 1fr)' }}>
-        {courses.map((course, index) => (
-          <Item key={index}>{course.name}</Item>  // 假設每個課程有 `name` 屬性
+        {courses.map((course) => (
+          <CourseItem
+            key={course.id}
+            courses={course}
+            onDelete={handleDeleteCourse}
+            onEdit={handleEditCourse}
+            sx={{ minHeight: '10rem' }}
+          />
         ))}
       </Box>
+
+      <CourseCreateDialog
+        open={openDialog}
+        hide={hideDialog}
+        createCourse={handleCreateCourse}
+      />
+
+      <CourseEditDialog
+        open={openEditDialog}
+        hide={() => setOpenEditDialog(false)}
+        currentCourseName={selectedCourse?.course_name || ''}
+        updateCourse={handleUpdateCourse}
+      />
     </div>
   );
 }
