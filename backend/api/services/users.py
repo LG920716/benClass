@@ -44,16 +44,16 @@ class UserService:
                 from api.services.courses import CourseService
                 course_service = CourseService()
                 enroll_data = {
+                    "action": "ADD",
                     "student": id,
-                    "action": "ADD"
                 }
                 course_service.update_course(data.enroll_id, enroll_data)
             elif data.enroll_type == "CLASS":
                 from api.services.classes import ClassService
                 class_service = ClassService()
                 enroll_data = {
+                    "action": "ADD",
                     "student": id,
-                    "action": "ADD"
                 }
                 class_service.update_class(data.enroll_id, enroll_data)
             return self.user_dao.user_enroll(id, data)

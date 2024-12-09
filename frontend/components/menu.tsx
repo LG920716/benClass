@@ -91,6 +91,7 @@ export default function Menu() {
   const handleLogout = () => {
     auth.logout();
     setAnchorEl(null);
+    router.push('/');
   };
 
   const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -138,6 +139,7 @@ export default function Menu() {
               <UserInfoCard
                 userId={auth.account.id}
                 role={auth.account.role}
+                name={auth.account.name}
                 gender={auth.account.gender}
                 onLogout={handleLogout}
               />

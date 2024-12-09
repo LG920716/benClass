@@ -61,12 +61,23 @@ class UserDao:
         user_data = user_doc.to_dict()
 
         if data.enroll_type == "COURSE":
-            if data.enroll_id not in user_data.get("courses_enrolled", []):
-                user_data["courses_enrolled"].append(data.enroll_id)
-                user_ref.update({"courses_enrolled": user_data["courses_enrolled"]})
+            courses_enrolled = user_data.get("courses_enrolled", [])
+            if isinstance(courses_enrolled, str):
+                courses_enrolled = [courses_enrolled]
+
+            if data.enroll_id not in courses_enrolled:
+                courses_enrolled.append(data.enroll_id)
+                user_data["courses_enrolled"] = courses_enrolled
+                user_ref.update({"courses_enrolled": courses_enrolled})
+
         elif data.enroll_type == "CLASS":
-            if data.enroll_id not in user_data.get("classes_enrolled", []):
-                user_data["classes_enrolled"].append(data.enroll_id)
-                user_ref.update({"classes_enrolled": user_data["classes_enrolled"]})
+            classes_enrolled = user_data.get("classes_enrolled", [])
+            if isinstance(classes_enrolled, str):
+                classes_enrolled = [classes_enrolled]
+
+            if data.enroll_id not in classes_enrolled:
+                classes_enrolled.append(data.enroll_id)
+                user_data["classes_enrolled"] = classes_enrolled
+                user_ref.update({"classes_enrolled": classes_enrolled})
 
         return UserResponse(**user_ref.get().to_dict())

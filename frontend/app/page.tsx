@@ -13,7 +13,6 @@ export default function GridTemplateAreas() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 取得學生資料
   useEffect(() => {
     if (auth.account?.id) {
       const fetchStudentData = async () => {
@@ -32,7 +31,6 @@ export default function GridTemplateAreas() {
     }
   }, [auth.account?.id]);
 
-  // 取得課程資料
   useEffect(() => {
     if (
       studentData?.courses_enrolled &&

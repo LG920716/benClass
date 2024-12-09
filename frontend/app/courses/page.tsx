@@ -1,25 +1,36 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
+// import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import Box from '@mui/material/Box';
-import { Button } from '@mui/material';
-import CourseCreateDialog from '@/components/courseCreateDialog';
-import CourseItem from '@/components/courseItem';
-import { Course, CourseCreateRequest } from '@/interface/types';
-import { getCourseByTeacher, createCourse, deleteCourse, updateCourse } from '../api/apis';
-import axios from 'axios';
-import CourseEditDialog from '@/components/courseUpdateDialog';
+import Box from "@mui/material/Box";
+import { Button } from "@mui/material";
+import CourseCreateDialog from "@/components/courseCreateDialog";
+import CourseItem from "@/components/courseItem";
+import { Course, CourseCreateRequest } from "@/interface/types";
+import {
+  getCourseByTeacher,
+  createCourse,
+  deleteCourse,
+  updateCourse,
+} from "../api/apis";
+import axios from "axios";
+import CourseEditDialog from "@/components/courseUpdateDialog";
+import { useRouter } from "next/navigation";
 
 export default function Courses() {
+  const router = useRouter()
   const auth = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [openEditDialog, setOpenEditDialog] = useState(false); // State for editing course
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null); // Selected course for editing
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
-  // Fetch courses using useCallback to avoid unnecessary re-creations
+  const handleCourseClick = (courseId: string) => {
+    router.push(`/courses/${courseId}`);
+  };
+
   const fetchCourses = useCallback(async () => {
     if (auth.account?.id) {
       try {
@@ -61,9 +72,9 @@ export default function Courses() {
       fetchCourses();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        setError(`刪除失敗: ${error.response.data.message || '未知錯誤'}`);
+        setError(`刪除失敗: ${error.response.data.message || "未知錯誤"}`);
       } else {
-        setError('刪除失敗，請稍後再試');
+        setError("刪除失敗，請稍後再試");
       }
     }
   };
@@ -93,8 +104,10 @@ export default function Courses() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div style={{ width: '100%', padding: '1rem' }}>
-      {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
+    <div style={{ width: "100%", padding: "1rem" }}>
+      {error && (
+        <div style={{ color: "red", marginBottom: "1rem" }}>{error}</div>
+      )}
 
       <Box sx={{ mb: 2 }}>
         <Button variant="outlined" color="secondary" onClick={showDialog}>
@@ -102,14 +115,17 @@ export default function Courses() {
         </Button>
       </Box>
 
-      <Box sx={{ display: 'grid', gap: 1, gridTemplateColumns: 'repeat(2, 1fr)' }}>
+      <Box
+        sx={{ display: "grid", gap: 1, gridTemplateColumns: "repeat(2, 1fr)" }}
+      >
         {courses.map((course) => (
           <CourseItem
             key={course.id}
             courses={course}
             onDelete={handleDeleteCourse}
             onEdit={handleEditCourse}
-            sx={{ minHeight: '10rem' }}
+            onClick={() => handleCourseClick(course.id)}
+            sx={{ minHeight: "10rem" }}
           />
         ))}
       </Box>
@@ -123,7 +139,7 @@ export default function Courses() {
       <CourseEditDialog
         open={openEditDialog}
         hide={() => setOpenEditDialog(false)}
-        currentCourseName={selectedCourse?.course_name || ''}
+        currentCourseName={selectedCourse?.course_name || ""}
         updateCourse={handleUpdateCourse}
       />
     </div>

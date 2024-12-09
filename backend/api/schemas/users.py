@@ -47,5 +47,5 @@ class UserUpdateRequest(BaseModel):
     role: str = None
 
 class UserEnrollRequest(BaseModel):
-    enroll_type:str # COURSE, CLASS
+    enroll_type: str # COURSE, CLASS
     enroll_id: str

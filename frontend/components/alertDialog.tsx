@@ -27,7 +27,7 @@ export default function ConfirmationDialog({
           取消
         </Button>
         <Button onClick={onConfirm} color="error" autoFocus>
-          確認刪除
+          確認
         </Button>
       </DialogActions>
     </Dialog>

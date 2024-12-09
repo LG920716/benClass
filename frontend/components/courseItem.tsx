@@ -8,7 +8,8 @@ import { Course } from '@/interface/types';
 interface CourseItemProps {
   courses: Course;
   onDelete: (courseId: string) => void;
-  onEdit: (course: Course) => void;  // Add onEdit prop
+  onEdit: (course: Course) => void;
+  onClick: () => void;
   sx?: any;
 }
 
@@ -18,7 +19,7 @@ export default function CourseItem({ courses, onDelete, onEdit, sx, ...other }: 
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleEdit = () => {
-    onEdit(courses);  // Call the onEdit function passed from Courses
+    onEdit(courses);
   };
 
   const handleDeleteClick = () => {
@@ -42,6 +43,7 @@ export default function CourseItem({ courses, onDelete, onEdit, sx, ...other }: 
           color: 'grey.800',
           border: '1px solid',
           borderColor: 'grey.300',
+          cursor: 'pointer',
           p: 2,
           borderRadius: 2,
           fontSize: '0.875rem',
