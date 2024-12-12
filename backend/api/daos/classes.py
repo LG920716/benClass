@@ -1,12 +1,20 @@
+from datetime import datetime, date
 from api.database import db
 from api.schemas.classes import Class
 
 class ClassDao:
     collection_name = "classes"
 
+    from datetime import datetime
+
     def create_class(self, class_data: Class) -> Class:
+        if isinstance(class_data.date, date):
+            class_data.date = datetime(class_data.date.year, class_data.date.month, class_data.date.day)
+        
         doc_ref = db.collection(self.collection_name).document(class_data.id).set(class_data.model_dump())
+        
         return Class(**class_data.model_dump())
+
 
     def get_class_by_id(self, id: str) -> Class:
         doc_ref = db.collection(self.collection_name).document(id)

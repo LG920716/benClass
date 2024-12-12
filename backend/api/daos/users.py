@@ -51,6 +51,14 @@ class UserDao:
             return doc_ref.to_dict()
         return None
     
+    def find_user_order_by_score(self, class_id: str):
+        query = (
+            self.collection_name.where("classes_enrolled", "array_contains", class_id)
+            .order_by("total_score")
+        )
+        result = query.stream()
+        return result
+    
     def user_enroll(self, id: str, data: UserEnrollRequest) -> UserResponse:
         user_ref = db.collection(self.collection_name).document(id)
         user_doc = user_ref.get()

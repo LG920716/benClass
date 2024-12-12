@@ -1,8 +1,10 @@
+from datetime import datetime, date
 from random import shuffle
 from fastapi import HTTPException
 from api.daos.classes import ClassDao
 from api.daos.scores import ScoreDao
 from api.schemas.classes import Class, ClassUpdateRequest
+from api.schemas.courses import CourseUpdateRequest
 from api.utils import generate_random_code
 
 class ClassService:
@@ -11,19 +13,34 @@ class ClassService:
         self.score_dao = ScoreDao() 
 
     def create_class(self, class_data: Class) -> Class:
-        new_class = {
-            "id": generate_random_code(),
-            "course_id": class_data.course_id,
-            "date": class_data.date,
-            "enrolled_students": [],
-            "groups": []
-        }
+        from api.services.courses import CourseService
+        course_service = CourseService()
+
+        if isinstance(class_data.date, date):
+            class_data.date = datetime(class_data.date.year, class_data.date.month, class_data.date.day)
+
+        new_class = Class(
+            id=generate_random_code(),
+            course_id=class_data.course_id,
+            date=class_data.date,
+            enrolled_students=[],
+            groups=[]
+        )
+
+        course_update = CourseUpdateRequest(
+            action = "ADD",
+            classes = [new_class.id]
+        )
+        
         created_class = self.class_dao.create_class(new_class)
+        course_service.update_course(new_class.course_id, course_update)
+        
         score_data = {
             "class_id": created_class.id,
             "matches": []
         }
         self.score_dao.create_score(score_data)
+        
         return created_class
 
     def update_class(self, class_id: str, class_update: ClassUpdateRequest) -> Class:
@@ -48,14 +65,25 @@ class ClassService:
         return self.class_dao.update_class(class_id, class_data.model_dump())
 
     def delete_class(self, id: str) -> str:
+        from api.services.courses import CourseService
+        course_service = CourseService()
+
+        class_data = self.query_class_by_id(id)
+
+        course_update = CourseUpdateRequest(
+            action = "DELETE",
+            classes = [id]
+        )
+
         self.score_dao.delete_score(id)
+        course_service.update_course(class_data.course_id, course_update)
         return self.class_dao.delete_class(id)
 
     def query_class_by_id(self, id: str) -> Class:
         class_ = self.class_dao.get_class_by_id(id)
         if not class_:
             raise HTTPException(status_code=404, detail=f"Class with ID {id} not found")
-        return Class(**class_)
+        return Class(**class_.model_dump())
     
     def grouping(self, id: str):
         from api.services.users import UserService

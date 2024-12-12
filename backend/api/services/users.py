@@ -26,6 +26,9 @@ class UserService:
     
     def find_user_by_id(self, id: str):
         return self.user_dao.find_user_by_id(id)
+    
+    def find_user_order_by_score(self, class_id: str):
+        return self.user_dao.find_user_order_by_score(class_id)
 
     def login(self, user_login: UserLoginRequest) -> UserLoginResponse:
         user = self.find_user_by_id(user_login.id)

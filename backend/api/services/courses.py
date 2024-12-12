@@ -22,19 +22,18 @@ class CourseService:
         return self.course_dao.create_course(new_course)
 
     def update_course(self, course_id: str, course_update: CourseUpdateRequest) -> CourseResponse:
-        # 獲取課程資料
         course_data = self.course_dao.get_course_by_id(course_id)
 
         if not course_data:
             raise HTTPException(status_code=404, detail=f"Course with ID {course_id} not found")
 
-        action = course_update.action  # 直接用屬性
+        action = course_update.action
 
         if action == "ADD":
             if course_update.student and course_update.student not in course_data.students:
                 course_data.students.append(course_update.student)
 
-            students_to_add = course_update.students or []  # 如果沒有提供，默認為空列表
+            students_to_add = course_update.students or []
             course_data.students.extend([s for s in students_to_add if s not in course_data.students])
 
             classes_to_add = course_update.classes or []

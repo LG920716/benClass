@@ -25,6 +25,10 @@ def query_users(course_id: str):
 def find_user_by_id(id:str):
     return user_service.find_user_by_id(id)
 
+@router.get("/{class_id}", response_model=UserResponse, tags=["user"])
+def find_user_order_by_score(class_id:str):
+    return user_service.find_user_order_by_score(class_id)
+
 @router.post("/login", response_model=UserLoginResponse, tags=["user"])
 def login(user_login: UserLoginRequest = Body(...)):
     user = user_service.login(user_login)
