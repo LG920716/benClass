@@ -58,9 +58,9 @@ class ClassService:
                 class_data.enrolled_students.remove(class_update.student)
             class_data.enrolled_students = [s for s in class_data.enrolled_students if s not in class_update.students]
 
-        elif class_update.action == "UPDATE":
-            if class_update.date:
-                class_data.date = class_update.date
+        # elif class_update.action == "UPDATE":
+        #     if class_update.date:
+        #         class_data.date = class_update.date
 
         return self.class_dao.update_class(class_id, class_data.model_dump())
 
@@ -84,37 +84,60 @@ class ClassService:
         if not class_:
             raise HTTPException(status_code=404, detail=f"Class with ID {id} not found")
         return Class(**class_.model_dump())
-    
+
     def grouping(self, id: str):
         from api.services.users import UserService
+        from api.services.scores import ScoreService
+        from random import shuffle
+
         user_service = UserService()
+        score_service = ScoreService()
+
         class_data = self.class_dao.get_class_by_id(id)
-        enrolled_students = class_data["enrolled_students"]
-        
-        team_count = max(1, len(enrolled_students) // 6)
+        enrolled_students = class_data.enrolled_students
+
+        total_students = len(enrolled_students)
+        team_count = total_students // 6
+
         students = [user_service.find_user_by_id(student_id) for student_id in enrolled_students]
-        
+
         boys = [s for s in students if s['gender'] == 1]
         girls = [s for s in students if s['gender'] == 2]
-        
+
+        shuffle(boys)
+        shuffle(girls)
+
+        teams = [[] for _ in range(team_count)]
+
         boys_per_team = len(boys) // team_count
         girls_per_team = len(girls) // team_count
-        
-        teams = [[] for _ in range(team_count)]
-        
+
         for i in range(team_count):
-            teams[i].extend(boys[i * boys_per_team: (i + 1) * boys_per_team])
-        
-        for i in range(team_count):
-            teams[i].extend(girls[i * girls_per_team: (i + 1) * girls_per_team])
-        
-        remaining_students = boys[team_count * boys_per_team:] + girls[team_count * girls_per_team:]
+            start_boy_idx = i * boys_per_team
+            end_boy_idx = (i + 1) * boys_per_team
+            teams[i].extend(boys[start_boy_idx:end_boy_idx])
+
+            start_girl_idx = i * girls_per_team
+            end_girl_idx = (i + 1) * girls_per_team
+            teams[i].extend(girls[start_girl_idx:end_girl_idx])
+
+        remaining_boys = boys[team_count * boys_per_team:]
+        remaining_girls = girls[team_count * girls_per_team:]
+        remaining_students = remaining_boys + remaining_girls 
+
         shuffle(remaining_students)
+  
         for i, student in enumerate(remaining_students):
             teams[i % team_count].append(student)
-        
-        grouped_data = [{"team": idx + 1, "members": [student['id'] for student in team]} for idx, team in enumerate(teams)]
-        class_data["groups"] = grouped_data
-        self.class_dao.update_class(id, class_data)
-        
+
+        grouped_data = [{f"team {idx + 1}": [student['id'] for student in team]} for idx, team in enumerate(teams)]
+
+        for group in grouped_data:
+            assert isinstance(list(group.keys())[0], str), f"Team key should be a string, got {type(list(group.keys())[0])}"
+            assert isinstance(list(group.values())[0], list), f"Members should be a list, got {type(list(group.values())[0])}"
+            assert all(isinstance(member, str) for member in list(group.values())[0]), "Each member in 'members' should be a string (student ID)"
+
+        self.class_dao.grouping(id, grouped_data)
+        score_service.schedule(id)
+
         return grouped_data

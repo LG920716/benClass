@@ -4,19 +4,25 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useState } from 'react';
 import ConfirmationDialog from './alertDialog';
 import { Course } from '@/interface/types';
+import { useRouter } from "next/navigation";
 
 interface CourseItemProps {
   courses: Course;
   onDelete: (courseId: string) => void;
   onEdit: (course: Course) => void;
-  onClick: () => void;
+  // onClick: () => void;
   sx?: any;
 }
 
 export default function CourseItem({ courses, onDelete, onEdit, sx, ...other }: CourseItemProps) {
+  const router = useRouter()
   const { id, course_name, students, classes } = courses;
   
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleCourseClick = (courseId: string) => {
+    router.push(`/courses/${courseId}`);
+  };
 
   const handleEdit = () => {
     onEdit(courses);
@@ -43,7 +49,6 @@ export default function CourseItem({ courses, onDelete, onEdit, sx, ...other }: 
           color: 'grey.800',
           border: '1px solid',
           borderColor: 'grey.300',
-          cursor: 'pointer',
           p: 2,
           borderRadius: 2,
           fontSize: '0.875rem',
@@ -62,7 +67,7 @@ export default function CourseItem({ courses, onDelete, onEdit, sx, ...other }: 
       ]}
       {...other}
     >
-      <Typography variant="h6" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => handleCourseClick(id)}      >
         <span style={{ marginRight: '8px', fontSize: '1rem', fontWeight: 'normal' }}>
           {id}
         </span>

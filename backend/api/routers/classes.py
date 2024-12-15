@@ -27,6 +27,6 @@ def delete_class(id: str):
 def query_class_by_id(id: str):
     return class_service.query_class_by_id(id)
 
-@router.patch("{id}/grouping", tags=["classes"])
+@router.patch("/{id}/grouping", tags=["classes"])
 def grouping(id: str):
     return class_service.grouping(id)

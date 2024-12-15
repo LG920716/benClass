@@ -1,9 +1,12 @@
+from datetime import datetime, date
 import bcrypt
 from fastapi import HTTPException
 from api.daos.users import UserDao
 from api.services.scores import ScoreService
 from api.services.classes import ClassService
 from api.schemas.users import UserCreateRequest, UserUpdateRequest, UserLoginRequest, UserLoginResponse, UserResponse, UserEnrollRequest
+from api.schemas.courses import CourseUpdateRequest
+from api.schemas.classes import ClassUpdateRequest
 from api.utils import validate_enrollment
 
 class UserService:
@@ -40,26 +43,30 @@ class UserService:
                 gender=user["gender"],
             )
         return None
-        
+
     def user_enroll(self, id: str, data: UserEnrollRequest) -> str:
         if validate_enrollment(data.enroll_type, data.enroll_id, id):
             if data.enroll_type == "COURSE":
                 from api.services.courses import CourseService
                 course_service = CourseService()
-                enroll_data = {
-                    "action": "ADD",
-                    "student": id,
-                }
+                enroll_data = CourseUpdateRequest(
+                    action="ADD",
+                    student=id,
+                )
                 course_service.update_course(data.enroll_id, enroll_data)
             elif data.enroll_type == "CLASS":
                 from api.services.classes import ClassService
                 class_service = ClassService()
-                enroll_data = {
-                    "action": "ADD",
-                    "student": id,
-                }
+                class_update = class_service.query_class_by_id(data.enroll_id)
+
+                enroll_data = ClassUpdateRequest(
+                    action="ADD",
+                    student=id,
+                )
                 class_service.update_class(data.enroll_id, enroll_data)
+            
             return self.user_dao.user_enroll(id, data)
+
         
     def score_update(self, class_id: str):
         class_data = self.class_service.query_class_by_id(class_id)

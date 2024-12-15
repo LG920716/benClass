@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 from datetime import date
 
 class Class(BaseModel):
@@ -14,6 +15,5 @@ class ClassCreateRequest(BaseModel):
     
 class ClassUpdateRequest(BaseModel):
     action: str  # ADD, DELETE, UPDATE
-    date: date
     student: str = None
     students: list[str] = []

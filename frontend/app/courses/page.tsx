@@ -27,9 +27,7 @@ export default function Courses() {
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
-  const handleCourseClick = (courseId: string) => {
-    router.push(`/courses/${courseId}`);
-  };
+
 
   const fetchCourses = useCallback(async () => {
     if (auth.account?.id) {
@@ -124,7 +122,6 @@ export default function Courses() {
             courses={course}
             onDelete={handleDeleteCourse}
             onEdit={handleEditCourse}
-            onClick={() => handleCourseClick(course.id)}
             sx={{ minHeight: "10rem" }}
           />
         ))}
