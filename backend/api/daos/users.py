@@ -1,6 +1,6 @@
 import bcrypt
 from api.database import db
-from api.schemas.users import UserCreateRequest, UserUpdateRequest, UserResponse, UserEnrollRequest
+from api.schemas.users import UpdateUserScoreSchema, UserCreateRequest, UserUpdateRequest, UserResponse, UserEnrollRequest
 
 class UserDao:
     collection_name = "users"
@@ -32,6 +32,23 @@ class UserDao:
         update_data = user_update.model_dump(exclude_unset=True)
         db.collection(self.collection_name).document(id).update(update_data)
         return self.get(id)
+    
+    def update_user_score(self, user_id: str, update_data: UpdateUserScoreSchema):
+        user_ref = db.collection("users").document(user_id)
+        
+        user_doc = user_ref.get()
+        if not user_doc.exists:
+            raise ValueError(f"User with id {user_id} not found")
+        
+        updates = {
+            "class_scores": update_data.class_scores,
+            "total_score": update_data.total_score
+        }
+    
+        user_ref.update(updates)
+
+        updated_user = self.find_user_by_id(user_id)
+        return updated_user
 
     def delete_user(self, id: str) -> str:
         doc_ref = db.collection(self.collection_name).document(id)

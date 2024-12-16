@@ -1,5 +1,5 @@
 from api.database import db
-from api.schemas.scores import ScoreResponse
+from api.schemas.scores import ScoreResponse, ScoreUpdateRequest
 
 class ScoreDao:
     collection_name = "scores"
@@ -18,7 +18,7 @@ class ScoreDao:
             return ScoreResponse(**scores[0])
         return None
 
-    def update_scores(self, class_id: str, score_data: ScoreResponse):
+    def update_scores(self, class_id: str, score_data: ScoreUpdateRequest):
         docs = db.collection(self.collection_name).where("class_id", "==", class_id).stream()
         for doc in docs:
             doc_ref = doc.reference

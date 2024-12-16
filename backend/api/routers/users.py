@@ -40,7 +40,6 @@ def login(user_login: UserLoginRequest = Body(...)):
 def user_enroll(id: str, data: UserEnrollRequest):
     return user_service.user_enroll(id, data)
 
-# when class finish, score computation
 @router.patch("/score_update/{class_id}", tags=["user"])
 def score_update(class_id: str) -> str:
     return user_service.score_update(class_id)

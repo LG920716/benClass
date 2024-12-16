@@ -24,7 +24,7 @@ class ScoreService:
         existing_scores.matches = score_update.matches
 
         self.score_dao.update_scores(class_id, existing_scores)
-        return ScoreResponse(**existing_scores)
+        return ScoreResponse(**existing_scores.model_dump())
 
     def delete_score(self, class_id: str) -> str:
         if not self.score_dao.get_score_by_class_id(class_id):
@@ -43,12 +43,10 @@ class ScoreService:
         from api.services.classes import ClassService
         class_service = ClassService()
 
-        # 查詢成績與班級資料
         score_data = self.query_score_by_class_id(class_id)
         class_data = class_service.query_class_by_id(class_id)
         teams = class_data.groups
 
-        # 提取隊伍名稱和隊員資料
         team_list = []
         for group in teams:
             for team_name, members in group.items():
@@ -62,7 +60,6 @@ class ScoreService:
 
         num_matches = 4
 
-        # 計算每場比賽的回合數
         if total_teams <= 3:
             rounds_per_match = 1
         elif total_teams <= 5:
@@ -72,27 +69,24 @@ class ScoreService:
         else:
             rounds_per_match = 4
 
-        # 生成比賽資料
         for match_index in range(num_matches):
             match = {
                 "match_number": match_number,
-                "rounds": []  # 確保是 List 而不是 Dict
+                "rounds": []
             }
 
             for round_index in range(rounds_per_match):
                 team1 = team_list[(match_index + round_index) % total_teams]
                 team2 = team_list[(match_index + round_index + 1) % total_teams]
 
-                # 使用隊伍名稱作為分數字典的鍵
                 round_update = RoundUpdate(
                     round_number=round_index + 1,
                     scores={team1["team_name"]: 0, team2["team_name"]: 0}
                 )
                 match["rounds"].append(round_update)
 
-            matches.append(MatchUpdate(**match))  # 使用 Pydantic 模型
+            matches.append(MatchUpdate(**match))
             match_number += 1
 
-        # 更新比賽結果
         score_data.matches = matches
         return self.score_dao.update_scores(class_id, score_data)

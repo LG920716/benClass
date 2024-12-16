@@ -8,14 +8,15 @@ import {
   getUserByCourseId,
   createClass,
   deleteClass,
+  userScoreUpdate,
 } from "@/app/api/apis";
 import { Course, UserResponse, ClassCreateRequest } from "@/interface/types";
 import { useRouter, useParams } from "next/navigation";
 import Button from "@mui/material/Button";
 import ClassCreateDialog from "@/components/classCreateDialog";
-import { IconButton } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ClassDetailDialog from "@/components/ClassDetailDialog";
+import { IconButton, Menu, MenuItem } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ClassDetailDialog from "@/components/classDetailDialog";
 
 export default function CourseRankingPage() {
   const auth = useAuth();
@@ -26,10 +27,11 @@ export default function CourseRankingPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 独立的 Dialog 控制
-  const [openCreateDialog, setOpenCreateDialog] = useState(false); // 用于控制課堂創建對話框
-  const [openDetailDialog, setOpenDetailDialog] = useState(false); // 用于控制課堂詳細對話框
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [openDetailDialog, setOpenDetailDialog] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     if (auth.account?.id && params.id) {
@@ -97,6 +99,29 @@ export default function CourseRankingPage() {
     } catch (error) {
       setError("刪除課堂失敗");
     }
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+    setSelectedClassId(null);
+  };
+
+  const handleEndClass = async (classId: string) => {
+    try {
+      await userScoreUpdate(classId);
+      alert("課堂已結束");
+      setCourse((prevCourse) => ({
+        ...prevCourse!,
+        classes: prevCourse?.classes.filter((id) => id !== classId) || [],
+      }));
+    } catch (error) {
+      setError("結束課堂失敗");
+    }
+  };
+
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>, classId: string) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedClassId(classId);
   };
 
   return (
@@ -213,14 +238,26 @@ export default function CourseRankingPage() {
                     >
                       <span>課堂 {classId}</span>
                       <IconButton
-                        onClick={() => handleDeleteClass(classId)}
-                        color="error"
+                        onClick={(e) => handleOpenMenu(e, classId)}  // 開啟 Menu
+                        color="default"
                       >
-                        <DeleteIcon />
+                        <MoreVertIcon />
                       </IconButton>
-                      <Button onClick={() => handleOpenDetailDialog(classId)}>
-                        查看課堂詳情
-                      </Button>
+                      <Menu
+                        anchorEl={anchorEl}
+                        open={selectedClassId === classId}
+                        onClose={handleCloseMenu}  // 關閉 Menu
+                      >
+                        <MenuItem onClick={() => handleOpenDetailDialog(classId)}>
+                          查看課堂詳情
+                        </MenuItem>
+                        <MenuItem onClick={() => handleEndClass(classId)}>
+                          結束課堂
+                        </MenuItem>
+                        <MenuItem onClick={() => handleDeleteClass(classId)}>
+                          刪除課堂
+                        </MenuItem>
+                      </Menu>
                     </li>
                   ))}
                 </ul>

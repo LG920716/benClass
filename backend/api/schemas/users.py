@@ -49,3 +49,7 @@ class UserUpdateRequest(BaseModel):
 class UserEnrollRequest(BaseModel):
     enroll_type: str # COURSE, CLASS
     enroll_id: str
+
+class UpdateUserScoreSchema(BaseModel):
+    class_scores: Dict[str, int]
+    total_score: float

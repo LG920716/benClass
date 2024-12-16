@@ -9,14 +9,14 @@ import {
   Box,
   Button,
   TextField,
+  CircularProgress,
+  Snackbar,
+  Typography,
+  Paper,
+  Stack,
 } from "@mui/material";
 import { getClass, updateScore, groupClass, getScore } from "@/app/api/apis";
-import {
-  Class,
-  MatchUpdate,
-  RoundUpdate,
-  ScoreUpdateRequest,
-} from "@/interface/types"; // 引入你的 TypeScript 類型
+import { MatchUpdate, RoundUpdate } from "@/interface/types";
 
 interface ClassDetailDialogProps {
   open: boolean;
@@ -34,195 +34,224 @@ export default function ClassDetailDialog({
   const [groups, setGroups] = useState<Record<string, string[]>[]>([]);
   const [matches, setMatches] = useState<MatchUpdate[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [scores, setScores] = useState<Record<string, number>>({});
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
-  // 取得課堂資料
-  useEffect(() => {
-    const fetchClassData = async () => {
-      setLoading(true);
-      try {
-        const classData = await getClass(classId);
-        setStudents(classData.enrolled_students);
-        setGroups(classData.groups);
-      } catch (error) {
-        console.error("Failed to fetch class data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleCloseSnackbar = () => setSnackbarOpen(false);
 
-    if (classId && open) {
-      fetchClassData();
-    }
-  }, [classId, open]);
-
-  // 取得賽程資料
-  useEffect(() => {
-    const fetchScoreData = async () => {
-      setLoading(true);
-      try {
-        const scoreData = await getScore(classId);
-        setMatches(scoreData.matches || []);
-      } catch (error) {
-        console.error("Failed to fetch score data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (classId && open) {
-      fetchScoreData();
-    }
-  }, [classId, open]);
-
-  // 分隊
-  const handleGroup = async () => {
+  const fetchClassData = async () => {
     setLoading(true);
     try {
-      const result = await groupClass(classId);
-      setGroups((await getClass(classId)).groups);
+      const classData = await getClass(classId);
+      setStudents(classData.enrolled_students);
+      setGroups(classData.groups);
     } catch (error) {
-      console.error("Failed to group students", error);
+      console.error("Failed to fetch class data", error);
+      setSnackbarMessage("無法獲取課堂資料");
+      setSnackbarOpen(true);
     } finally {
       setLoading(false);
     }
   };
 
-  // 更新分數
+  const fetchMatchData = async () => {
+    setLoading(true);
+    try {
+      const scoreData = await getScore(classId);
+      setMatches(scoreData.matches);
+    } catch (error) {
+      console.error("Failed to fetch match data", error);
+      setSnackbarMessage("無法獲取賽程資料");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (classId && open) {
+      fetchClassData();
+      fetchMatchData();
+    }
+  }, [classId, open]);
+
+  const handleGroup = async () => {
+    setLoading(true);
+    try {
+      await groupClass(classId);
+      fetchClassData();
+    } catch (error) {
+      console.error("Failed to group students", error);
+      setSnackbarMessage("分隊失敗");
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleScoreChange = (
+    matchIndex: number,
+    roundIndex: number,
+    teamName: string,
+    value: number
+  ) => {
+    setMatches((prevMatches) => {
+      const updatedMatches = [...prevMatches];
+      updatedMatches[matchIndex].rounds[roundIndex].scores[teamName] = value;
+      return updatedMatches;
+    });
+  };
+
   const handleScoreSubmit = async () => {
     setLoading(true);
-
-    // 構建分數更新請求
-    const matchUpdateData: ScoreUpdateRequest = {
+    const matchUpdateData = {
       matches: matches.map((match) => ({
         match_number: match.match_number,
         rounds: match.rounds.map((round) => ({
           round_number: round.round_number,
-          scores: Object.keys(scores).reduce((acc, key) => {
-            const [matchIndex, roundIndex] = key.split("-").map(Number);
-
-            // 確保只更新當前比賽和回合的分數
-            if (
-              matchIndex === match.match_number - 1 &&
-              roundIndex === round.round_number - 1
-            ) {
-              // 使用回合的隊伍名稱（這裡假設每回合都有兩隊）
-              const teamName = `team${roundIndex === 0 ? "A" : "B"}`; // 可以根據實際情況調整
-              acc[teamName] = scores[key]; // 更新對應隊伍的分數
-            }
-            return acc;
-          }, {} as Record<string, number>),
+          scores: round.scores,
         })),
       })),
     };
 
     try {
       await updateScore(classId, matchUpdateData);
-      alert("Scores updated successfully!");
+      setSnackbarMessage("分數更新成功！");
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Failed to update scores", error);
+      setSnackbarMessage("更新分數失敗");
+      setSnackbarOpen(true);
     } finally {
       setLoading(false);
     }
-  };
-
-  // Tab 切換
-  const handleTabChange = (event: React.SyntheticEvent, newIndex: number) => {
-    setTabIndex(newIndex);
-  };
-
-  // 渲染分隊標籤
-  const renderGroupsTab = () => {
-    return (
-      <Box>
-        <h4>分隊結果</h4>
-        {groups.length === 0 ? (
-          <Button onClick={handleGroup} variant="contained" color="primary">
-            開始分隊
-          </Button>
-        ) : (
-          <ul>
-            {groups.map((group, index) => (
-              <Box key={index}>
-                <h5>分隊 {index + 1}</h5>
-                <ul>
-                  {Object.keys(group).map((teamName) => (
-                    <li key={teamName}>
-                      <strong>{teamName}:</strong> {group[teamName].join(", ")}
-                    </li>
-                  ))}
-                </ul>
-              </Box>
-            ))}
-          </ul>
-        )}
-      </Box>
-    );
-  };
-
-  // 渲染賽程表標籤
-  const renderMatchesTab = () => {
-    return (
-      <Box>
-        <h4>賽程表</h4>
-        {matches.length === 0 ? (
-          <div>沒有賽程資料</div>
-        ) : (
-          <div>
-            {matches.map((match, matchIndex) => (
-              <Box key={matchIndex} sx={{ marginBottom: "1rem" }}>
-                <h5>比賽 {match.match_number}</h5>
-                {match.rounds.map((round, roundIndex) => (
-                  <div key={roundIndex}>
-                    <TextField
-                      label={`隊伍 ${roundIndex === 0 ? "A" : "B"} 分數`} // 動態顯示隊伍名稱
-                      value={scores[`${matchIndex}-${roundIndex}`] || ""}
-                      onChange={(e) =>
-                        setScores({
-                          ...scores,
-                          [`${matchIndex}-${roundIndex}`]: Number(
-                            e.target.value
-                          ),
-                        })
-                      }
-                    />
-                  </div>
-                ))}
-              </Box>
-            ))}
-            <Button
-              onClick={handleScoreSubmit}
-              variant="contained"
-              color="primary"
-            >
-              分數結算
-            </Button>
-          </div>
-        )}
-      </Box>
-    );
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>課堂詳細資料</DialogTitle>
       <DialogContent>
-        <Tabs
-          value={tabIndex}
-          onChange={handleTabChange}
-          aria-label="Class Details"
-        >
+        <Tabs value={tabIndex} onChange={(e, newIndex) => setTabIndex(newIndex)}>
           <Tab label="分隊" />
           <Tab label="賽程表" />
         </Tabs>
-        {tabIndex === 0 && renderGroupsTab()}
-        {tabIndex === 1 && renderMatchesTab()}
+        {loading && <CircularProgress sx={{ display: "block", margin: "auto" }} />}
+        {tabIndex === 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              分隊結果
+            </Typography>
+            {groups.length === 0 ? (
+              <Button
+                onClick={handleGroup}
+                variant="contained"
+                color="primary"
+                sx={{ mb: 2 }}
+              >
+                開始分隊
+              </Button>
+            ) : (
+              <Stack spacing={2}>
+                {groups.map((group, index) => (
+                  <Paper key={index} sx={{ padding: 2, borderRadius: 2 }}>
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      分隊 {index + 1}
+                    </Typography>
+                    {Object.keys(group).map((teamName) => (
+                      <Typography key={teamName}>
+                        <strong>{teamName}:</strong> {group[teamName].join(", ")}
+                      </Typography>
+                    ))}
+                  </Paper>
+                ))}
+              </Stack>
+            )}
+          </Box>
+        )}
+        {tabIndex === 1 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              賽程表
+            </Typography>
+            {matches.length === 0 ? (
+              <Typography variant="body1">沒有賽程資料</Typography>
+            ) : (
+              <Stack spacing={3}>
+                {matches.map((match, matchIndex) => (
+                  <Box
+                    key={matchIndex}
+                    sx={{
+                      border: "1px solid #ddd",
+                      borderRadius: 2,
+                      padding: 2,
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ mb: 1 }}>
+                      第 {match.match_number} 輪
+                    </Typography>
+                    <Stack spacing={1}>
+                      {match.rounds.map((round, roundIndex) => (
+                        <Box
+                          key={roundIndex}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                            場{round.round_number}:{" "}
+                            {Object.entries(round.scores)[0] && (
+                              <>
+                                {Object.entries(round.scores)[0][0]} <span> VS </span>
+                              </>
+                            )}
+                            {Object.entries(round.scores)[0] && (
+                              <>{Object.entries(round.scores)[1][0]}</>
+                            )}
+                          </Typography>
+                          {Object.entries(round.scores).map(([teamName, score]) => (
+                            <TextField
+                              key={teamName}
+                              label={teamName}
+                              variant="outlined"
+                              value={score}
+                              onChange={(e) =>
+                                handleScoreChange(matchIndex, roundIndex, teamName, Number(e.target.value))
+                              }
+                              sx={{ width: 100 }}
+                            />
+                          ))}
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+                ))}
+                <Button
+                  onClick={handleScoreSubmit}
+                  variant="contained"
+                  color="primary"
+                  disabled={loading}
+                  sx={{ mt: 2 }}
+                >
+                  分數結算
+                </Button>
+              </Stack>
+            )}
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">
           關閉
         </Button>
       </DialogActions>
+      <Snackbar
+        open={snackbarOpen}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+        autoHideDuration={3000}
+      />
     </Dialog>
   );
 }
