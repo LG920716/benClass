@@ -32,18 +32,24 @@ spec:
           secret:
             secretName: backend-secret
 ---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: managed-cert
+spec:
+  domains:
+    - 34.102.224.16.nip.io
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
-  labels:
-    app: backend
 spec:
   type: ClusterIP
   selector:
     app: backend
   ports:
-  - port: 8000
+  - port: 443
     targetPort: 8000
 ---
 apiVersion: networking.k8s.io/v1
@@ -52,14 +58,14 @@ metadata:
   name: backend-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "benclass-backend"
-  labels:
-    app: backend
+    networking.gke.io/managed-certificates: managed-cert
+    kubernetes.io/ingress.class: "gce"
 spec:
   defaultBackend:
     service:
       name: backend-service
       port:
-        number: 8000
+        number: 443
 ---
 apiVersion: cloud.google.com/v1
 kind: BackendConfig
@@ -71,6 +77,6 @@ spec:
     timeoutSec: 30
     healthyThreshold: 2
     unhealthyThreshold: 2
-    type: HTTP
-    requestPath: healthcheck
+    type: HTTPS
+    requestPath: /healthcheck
     port: 8000
