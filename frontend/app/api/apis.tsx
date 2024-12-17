@@ -24,6 +24,11 @@ export const getUserByCourseId = async (course_id: string): Promise<UserResponse
   return response.data;
 };
 
+export const findUserOrderByScore = async (course_id: string): Promise<UserResponse[]> => {
+  const response = await axios.get(`${BASE_URL}/users/${course_id}/score`);
+  return response.data;
+}
+
 export const getUserById = async (id: string): Promise<UserResponse> => {
   const response = await axios.get(`${BASE_URL}/users/${id}`);
   return response.data;
