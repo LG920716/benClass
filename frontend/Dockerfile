@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-
+RUN ls -al /app/components
 RUN npm run build
 
 EXPOSE 80
