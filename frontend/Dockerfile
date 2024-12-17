@@ -6,8 +6,10 @@ COPY package*.json ./
 
 RUN npm install
 
+ENV NEXT_ESLINT_NO_DEV_ERRORS=true
+
 COPY . .
-RUN ls -al /app/components
+
 RUN npm run build
 
 EXPOSE 80
