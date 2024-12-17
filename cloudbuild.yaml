@@ -10,7 +10,6 @@ steps:
 # This step builds the frontend container image.
 - name: 'gcr.io/cloud-builders/docker'
   id: Build Frontend
-  entrypoint: /bin/sh
   args:
   - 'build'
   - '-t'
@@ -20,7 +19,6 @@ steps:
 # This step builds the backend container image.
 - name: 'gcr.io/cloud-builders/docker'
   id: Build Backend
-  entrypoint: /bin/sh
   args:
   - 'build'
   - '-t'
