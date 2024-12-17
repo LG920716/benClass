@@ -20,6 +20,7 @@ steps:
 # This step builds the backend container image.
 - name: 'gcr.io/cloud-builders/docker'
   id: Build Backend
+  entrypoint: /bin/sh
   - 'build'
   - '-t'
   - 'asia-east1-docker.pkg.dev/$PROJECT_ID/my-backend-repository/benclass:$SHORT_SHA'
