@@ -32,6 +32,14 @@ spec:
           secret:
             secretName: backend-secret
 ---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: managed-cert-backend
+spec:
+  domains:
+    - 34.102.224.16.nip.io
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -50,7 +58,7 @@ metadata:
   name: backend-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "benclass-backend"
-    networking.gke.io/managed-certificates: managed-cert
+    networking.gke.io/managed-certificates: managed-cert-backend
     kubernetes.io/ingress.class: "gce"
 spec:
   defaultBackend:
