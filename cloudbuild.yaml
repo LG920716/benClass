@@ -14,7 +14,7 @@ steps:
   - 'build'
   - '-t'
   - 'asia-east1-docker.pkg.dev/$PROJECT_ID/my-frontend-repository/benclass:$SHORT_SHA'
-  - './frontend'
+  - './frontend/'
 
 # This step builds the backend container image.
 - name: 'gcr.io/cloud-builders/docker'
@@ -23,7 +23,7 @@ steps:
   - 'build'
   - '-t'
   - 'asia-east1-docker.pkg.dev/$PROJECT_ID/my-backend-repository/benclass:$SHORT_SHA'
-  - './backend'
+  - './backend/'
 
 # This step pushes the image to Artifact Registry
 # The PROJECT_ID and SHORT_SHA variables are automatically
