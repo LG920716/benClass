@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: asia-east1-docker.pkg.dev/GOOGLE_CLOUD_PROJECT/my-backend-repository/cbenclass:COMMIT_SHA
+          image: asia-east1-docker.pkg.dev/GOOGLE_CLOUD_PROJECT/my-backend-repository/benclass:COMMIT_SHA
           ports:
             - containerPort: 80
           envFrom:
