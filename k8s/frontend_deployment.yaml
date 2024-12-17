@@ -46,7 +46,7 @@ kind: Ingress
 metadata:
   name: frontend-ingress
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: "34.120.134.111"
+    kubernetes.io/ingress.global-static-ip-name: "benclass"
     networking.gke.io/managed-certificates: managed-cert
     kubernetes.io/ingress.class: "gce"
 spec:
