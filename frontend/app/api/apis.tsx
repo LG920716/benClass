@@ -2,7 +2,7 @@ import axios from 'axios';
 import { UserCreateRequest, UserUpdateRequest, UserLoginRequest, UserLoginResponse, UserResponse, UserEnrollRequest, CourseCreateRequest, CourseUpdateRequest, Course, Class, ClassUpdateRequest, ClassCreateRequest, ScoreUpdateRequest, ScoreResponse } from '../../interface/types';
 
 // const BASE_URL = "http://localhost:8000";
-const BASE_URL = "http://34.118.224.5:8000";
+const BASE_URL = "http://backend-service:8000";
 
 // User API
 export const registerUser = async (data: UserCreateRequest): Promise<UserResponse> => {
