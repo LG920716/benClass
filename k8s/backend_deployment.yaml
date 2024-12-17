@@ -71,4 +71,4 @@ spec:
     unhealthyThreshold: 2
     type: HTTPS
     requestPath: /healthcheck
-    port: 8000
+    port: 443
