@@ -49,6 +49,7 @@ metadata:
     kubernetes.io/ingress.global-static-ip-name: "benclass"
     networking.gke.io/managed-certificates: managed-cert
     kubernetes.io/ingress.class: "gce"
+    networking.gke.io/backend-config: '{"default": "my-backendconfig"}'
 spec:
   defaultBackend:
     service:
