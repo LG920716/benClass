@@ -16,7 +16,7 @@ import Button from "@mui/material/Button";
 import ClassCreateDialog from "@/components/classCreateDialog";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ClassDetailDialog from "../../../components/classDetailDialog";
+import ClassDetailDialog from "@/components/classDetailDialog";
 
 export default function CourseRankingPage() {
   const auth = useAuth();
