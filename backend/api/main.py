@@ -5,7 +5,9 @@ from api.routers import users, courses, classes, scores, health, files
 app = FastAPI()
 
 origins = [
-    "https://34.120.134.111.nip.io/",
+    "https://34.120.134.111.nip.io",
+    "35.191.0.0/16",
+    "130.211.0.0/22"
 ]
 
 # CORS 設置

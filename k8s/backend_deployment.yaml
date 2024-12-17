@@ -32,14 +32,6 @@ spec:
           secret:
             secretName: backend-secret
 ---
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: managed-cert
-spec:
-  domains:
-    - 34.102.224.16.nip.io
----
 apiVersion: v1
 kind: Service
 metadata:
