@@ -19,9 +19,6 @@ spec:
           image: asia-east1-docker.pkg.dev/GOOGLE_CLOUD_PROJECT/my-frontend-repository/benclass:COMMIT_SHA
           ports:
             - containerPort: 80
-          env:
-            - name: BACKEND_API_URL
-              value: "http://backend-service:8000"
 ---
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
