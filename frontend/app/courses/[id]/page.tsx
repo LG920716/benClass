@@ -263,7 +263,7 @@ export default function CourseRankingPage() {
                 </ul>
               </>
             ) : (
-              <div>目前沒有課堂資料</div>
+              <div>目前無課堂資料</div>
             )}
           </Box>
 
